@@ -6,7 +6,6 @@ const App = () => {
   connectDB()
   return (
     <div>
-      
     <HomePage/>
     </div>
   )
