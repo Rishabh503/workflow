@@ -32,7 +32,7 @@ export default function RootLayout({ children }) {
         <SyncUser/>
          <Navbar/>
         {children}
-        <Footer/>
+        {/* <Footer/> */}
        </ClerkProvider>
        </UserProvider>
 
