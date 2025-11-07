@@ -10,18 +10,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useState } from "react";
-// subject deadline title 
-export default function DeleteGoalForm({goal}) {
+import { Trash2 } from "lucide-react";
 
+export default function DeleteGoalForm({goal}) {
   const [loading, setLoading] = useState(false);
   const [responseMsg, setResponseMsg] = useState("");
-  console.log(goal,"goal from delete")
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+
+  const handleDelete = async () => {
     setLoading(true);
    
     try {
@@ -32,40 +28,56 @@ export default function DeleteGoalForm({goal}) {
       const data = await res.json();
 
       if (res.ok) {
-        setResponseMsg(`✅ Goal  updated successfully!`);
+        setResponseMsg(`✅ Goal deleted successfully!`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         setResponseMsg(`❌ ${data.error}`);
       }
     } catch (error) {
       setResponseMsg("❌ Something went wrong. Try again.");
     }
-    window.location.reload();
+    
+    setLoading(false);
   };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-         <Button className='bg-red-200 hover:bg-red-400 text-black mx-2 '>
-                    Delete
-          </Button>
+        <button className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+          <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-400" />
+        </button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle className="text-xl">Confirm Delete Goal </DialogTitle>
-          </DialogHeader>
+      <DialogContent className="sm:max-w-[425px] bg-[#1a1b23] border-gray-800">
+        <DialogHeader>
+          <DialogTitle className="text-xl text-white">Confirm Delete Goal</DialogTitle>
+        </DialogHeader>
 
-          <DialogFooter className="mt-4 flex items-center justify-center ">
-            <DialogClose asChild>
-              <Button variant="outline" type="button">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button className='bg-red-600 hover:bg-red-800' type="submit" disabled={loading}>
-              {loading ? "Deleting..." : "Delete"}
+        <div className="py-4">
+          <p className="text-gray-300">
+            Are you sure you want to delete "<span className="font-semibold">{goal.title}</span>"? This action cannot be undone.
+          </p>
+          
+          {responseMsg && (
+            <p className="text-sm text-center text-gray-300 mt-4">{responseMsg}</p>
+          )}
+        </div>
+
+        <DialogFooter className="mt-4 flex items-center justify-end gap-2">
+          <DialogClose asChild>
+            <Button variant="outline" type="button" className="bg-transparent border-gray-700 text-gray-300 hover:bg-gray-800">
+              Cancel
             </Button>
-          </DialogFooter>
-        </form>
+          </DialogClose>
+          <Button 
+            onClick={handleDelete}
+            disabled={loading}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            {loading ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -19,10 +19,11 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
 import { useUser } from "@/context/UserContext";
+import { Plus } from "lucide-react";
 
-// subject deadline title 
 export function DialogGoal() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -30,12 +31,11 @@ export function DialogGoal() {
   const [deadline, setDeadline] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMsg, setResponseMsg] = useState("");
-const {user}=useUser()
+  const { user } = useUser();
 
-const subjects=user.student.subjects.map((s)=>s.name)
-console.log("subjbsjbsj",subjects)
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const subjects = user.student.subjects || [];
+
+  const handleSubmit = async () => {
     setLoading(true);
     setResponseMsg("");
 
@@ -52,6 +52,9 @@ console.log("subjbsjbsj",subjects)
 
       if (res.ok) {
         setResponseMsg(`✅ Goal added successfully!`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         setResponseMsg(`❌ ${data.error}`);
       }
@@ -60,95 +63,94 @@ console.log("subjbsjbsj",subjects)
     }
 
     setLoading(false);
-    setTitle(""); 
-    setDeadline("");
-    setDescription("");
-    setSubject("");
   };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button className="bg-white-300 hover:bg-amber-400" variant="outline">
-          Add New Goal
+        <Button className="bg-teal-600 hover:bg-teal-700 text-white">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Goal
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle className="text-3xl">Add Goal</DialogTitle>
-          </DialogHeader>
+      <DialogContent className="sm:max-w-[500px] bg-[#1a1b23] border-gray-800">
+        <DialogHeader>
+          <DialogTitle className="text-2xl text-white">Add New Goal</DialogTitle>
+        </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="subject">Subject</Label>
-              <Select value={subject} onValueChange={(value) => setSubject(value)} required>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select subject" />
-                </SelectTrigger>
-                
-                <SelectContent>
-                  {subjects.map((s)=>(
-                  <SelectItem value={s}>{s}</SelectItem>
-
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="subject" className="text-gray-300">Subject</Label>
+            <Select value={subject} onValueChange={(value) => setSubject(value)}>
+              <SelectTrigger className="w-full bg-[#0a0b0f] border-gray-700 text-white">
+                <SelectValue placeholder="Select subject" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a1b23] border-gray-700">
+                {subjects.map((s) => (
+                  <SelectItem 
+                    key={s._id} 
+                    value={s.name}
+                    className="text-white hover:bg-gray-800 focus:bg-gray-800"
+                  >
+                    {s.name}
+                  </SelectItem>
                 ))}
-                  </SelectContent>
-
-              </Select>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                name="title"
-                placeholder="e.g. Chapter 1 Homework"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
-                name="description"
-                placeholder="Add the description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="deadline">Deadline</Label>
-              <Input
-                type="date"
-                id="deadline"
-                name="deadline"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                required
-              />
-            </div>
-
-            {responseMsg && (
-              <p className="text-sm text-center text-gray-300">{responseMsg}</p>
-            )}
+              </SelectContent>
+            </Select>
           </div>
 
-          <DialogFooter className="mt-4">
-            <DialogClose asChild>
-              <Button variant="outline" type="button">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+          <div className="grid gap-2">
+            <Label htmlFor="title" className="text-gray-300">Title</Label>
+            <Input
+              id="title"
+              placeholder="e.g. Complete Chapter 5 Reading"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="bg-[#0a0b0f] border-gray-700 text-white"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="description" className="text-gray-300">Description</Label>
+            <Textarea
+              id="description"
+              placeholder="Add the description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="bg-[#0a0b0f] border-gray-700 text-white min-h-[100px]"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="deadline" className="text-gray-300">Deadline</Label>
+            <Input
+              type="date"
+              id="deadline"
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className="bg-[#0a0b0f] border-gray-700 text-white"
+            />
+          </div>
+
+          {responseMsg && (
+            <p className="text-sm text-center text-gray-300">{responseMsg}</p>
+          )}
+        </div>
+
+        <DialogFooter className="mt-4">
+          <DialogClose asChild>
+            <Button variant="outline" type="button" className="bg-transparent border-gray-700 text-gray-300 hover:bg-gray-800">
+              Cancel
             </Button>
-          </DialogFooter>
-        </form>
+          </DialogClose>
+          <Button 
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+          >
+            {loading ? "Saving..." : "Add Goal"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

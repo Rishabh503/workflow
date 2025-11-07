@@ -17,26 +17,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { useUser } from "@/context/UserContext";
 
-// subject deadline title 
-export function UpdateStatus({goal}) {
-  const [title, setTitle] = useState("");
-
-  const [deadline, setDeadline] = useState("");
+export function UpdateStatus({ goal }) {
+  const [status, setStatus] = useState(goal.completionStatus || "PENDING - 0%");
   const [loading, setLoading] = useState(false);
   const [responseMsg, setResponseMsg] = useState("");
-    console.log("goal goal goal",goal)
-  const options=[{status:'PENDING',percentage:0},
-    {status:'PARTIAL DONE',percentage:25},
-    {status:'HALF DONE',percentage:50},
-   { status:'ALMOST DONE',percentage:75},
-     {status:'COMPLETED',percentage:100}]
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const options = [
+    { status: 'PENDING', percentage: 0 },
+    { status: 'PARTIAL DONE', percentage: 25 },
+    { status: 'HALF DONE', percentage: 50 },
+    { status: 'ALMOST DONE', percentage: 75 },
+    { status: 'COMPLETED', percentage: 100 }
+  ];
+
+  const handleSubmit = async () => {
     setLoading(true);
     setResponseMsg("");
 
@@ -46,13 +44,16 @@ export function UpdateStatus({goal}) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ goalId:goal._id,status:title }),
+        body: JSON.stringify({ goalId: goal._id, status: status }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
         setResponseMsg(`✅ Status updated successfully!`);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } else {
         setResponseMsg(`❌ ${data.error}`);
       }
@@ -61,56 +62,56 @@ export function UpdateStatus({goal}) {
     }
 
     setLoading(false);
-    setTitle(""); 
-
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-green-300 hover:bg-green-400 text-black" variant="outline">
-        Update Status
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1">
+          Update Status
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle className="text-3xl"></DialogTitle>
-          </DialogHeader>
+      <DialogContent className="sm:max-w-[425px] bg-[#1a1b23] border-gray-800">
+        <DialogHeader>
+          <DialogTitle className="text-2xl text-white">Update Goal Status</DialogTitle>
+        </DialogHeader>
 
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">Update</Label>
-              <Select value={title} onValueChange={(value) => setTitle(value)} required>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select subject" />
-                </SelectTrigger>
-                
-                <SelectContent>
-                  {options.map((s)=>(
-                  <SelectItem value={s.status}>{s.status}   - {s.percentage}%</SelectItem>
-
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="status" className="text-gray-300">Select Status</Label>
+            <Select value={status} onValueChange={(value) => setStatus(value)}>
+              <SelectTrigger className="w-full bg-[#0a0b0f] border-gray-700 text-white">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1a1b23] border-gray-700">
+                {options.map((option) => (
+                  <SelectItem 
+                    key={option.status} 
+                    value={`${option.status} - ${option.percentage}%`}
+                    className="text-white hover:bg-gray-800 focus:bg-gray-800"
+                  >
+                    {option.status} - {option.percentage}%
+                  </SelectItem>
                 ))}
-                  </SelectContent>
-
-              </Select>
-            </div>
-            {responseMsg && (
-              <p className="text-sm text-center text-gray-300">{responseMsg}</p>
-            )}
+              </SelectContent>
+            </Select>
           </div>
 
-          <DialogFooter className="mt-4">
-            <DialogClose asChild>
-              <Button variant="outline" type="button">
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save"}
+          {responseMsg && (
+            <p className="text-sm text-center text-gray-300">{responseMsg}</p>
+          )}
+        </div>
+
+        <DialogFooter className="mt-4">
+          <DialogClose asChild>
+            <Button variant="outline" type="button" className="bg-transparent border-gray-700 text-gray-300 hover:bg-gray-800">
+              Cancel
             </Button>
-          </DialogFooter>
-        </form>
+          </DialogClose>
+          <Button onClick={handleSubmit} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white">
+            {loading ? "Saving..." : "Save"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

@@ -14,7 +14,7 @@ export const UserProvider = ({ children }) => {
         const res = await fetch('/api/subjects/user');
         const data = await res.json();
         setUser(data);
-        console.log(data)
+        console.log("user ka data",data)
       } catch (err) {
         console.error('Failed to fetch user', err);
       } finally {
