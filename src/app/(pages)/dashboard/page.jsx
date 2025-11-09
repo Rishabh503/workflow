@@ -1,13 +1,14 @@
-import React from 'react'
-import GoalStatusPieChart from './__components/graphs/GoalStatusPieChart'
-import DeadlineTimelineChart from './__components/graphs/DeadlineTImelineChart'
-import DailyStudyTimeGraph from './__components/graphs/DailyStudyTimeGraph'
-import SubjectWiseGoalBarChart from './__components/graphs/SubjectWIseGoalBarChart'
-import SessionsPerDayCountChart from './__components/graphs/SessionsPerDayCountChart'
-import SubjectDistributionPieChart from './__components/graphs/SubjectDistributionPieChart'
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import GoalStatusPieChart from './__components/graphs/GoalStatusPieChart';
+
+import DailyStudyTimeGraph from './__components/graphs/DailyStudyTimeGraph';
+import SubjectWiseGoalBarChart from './__components/graphs/SubjectWIseGoalBarChart'; 
+import SessionsPerDayCountChart from './__components/graphs/SessionsPerDayCountChart';
+
 import { Card, CardTitle } from "@/components/ui/card";
-import { ProfileCard } from './__components/others/ProfileCard'
-import AverageSessionTimeCard from './__components/graphs/AverageSessionTimeCard'
+import { ProfileCard } from './__components/others/ProfileCard';
 
 const StatCard = ({ title, value, subtitle, icon }) => (
   <Card className="p-6 bg-gray-800/50 backdrop-blur-sm rounded-xl text-white border border-gray-700/50 hover:bg-gray-800/70 transition-all duration-300">
@@ -27,33 +28,81 @@ const ChartCard = ({ children, className = "" }) => (
 );
 
 const DashboardPage = () => {
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const response = await fetch('/api/dashboard');
+        if (!response.ok) throw new Error('Failed to fetch dashboard data');
+        const data = await response.json();
+        console.log("dashboard data",data)
+        setDashboardData(data);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex items-center justify-center">
+        <div className="text-xl text-gray-400">Loading dashboard...</div>
+      </main>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <main className="min-h-screen p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex items-center justify-center">
+        <div className="text-xl text-gray-400">Failed to load dashboard data</div>
+      </main>
+    );
+  }
+
+  const { stats, goalStatusData, subjectWiseData, dailyStudyData, sessionsPerDayData, subjectDistributionData, upcomingGoals, avgSessionTime } = dashboardData;
+
   return (
     <main className="min-h-screen p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-white mb-2">Dashboard</h1>
+        <p className="text-gray-400">Welcome back, Here's your study progress.</p>
+      </div>
 
       {/* Profile and Quick Stats Section */}
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8">
         <div className="xl:col-span-2">
-          <div className="h-full">
-            <ProfileCard />
-          </div>
+          <ProfileCard />
         </div>
         <div className="xl:col-span-3">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 h-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 h-full">
             <StatCard 
               title="Total Goals" 
-              value="9" 
+              value={stats.totalGoals} 
               subtitle="Active learning objectives"
               icon="🎯"
             />
             <StatCard 
               title="Completed Goals" 
-              value="3" 
-              subtitle="33% completion rate"
+              value={stats.completedGoals} 
+              subtitle={`${stats.totalGoals > 0 ? Math.round((stats.completedGoals / stats.totalGoals) * 100) : 0}% completion rate`}
               icon="✅"
             />
             <StatCard 
+              title="Total Study Time" 
+              value={`${Math.floor(stats.totalStudyMinutes / 60)}h ${stats.totalStudyMinutes % 60}m`}
+              subtitle="All time"
+              icon="⏱️"
+            />
+            <StatCard 
               title="Upcoming Deadlines" 
-              value="4" 
+              value={stats.upcomingDeadlines} 
               subtitle="Next 7 days"
               icon="⏰"
             />
@@ -61,43 +110,24 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Main Analytics Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
-        <div className="xl:col-span-2">
-          <ChartCard>
-            <SubjectWiseGoalBarChart />
-          </ChartCard>
-        </div>
-        <div className="xl:col-span-1">
-          <ChartCard>
-            <GoalStatusPieChart />
-          </ChartCard>
-        </div>
-      </div>
-
-      {/* Secondary Analytics Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      {/* Daily Study Time - Full Width at Top */}
+      <div className="mb-8">
         <ChartCard>
-          <DeadlineTimelineChart />
+          <DailyStudyTimeGraph data={dailyStudyData} />
         </ChartCard>
-    <ChartCard>
-            <SessionsPerDayCountChart />
-          </ChartCard>
       </div>
 
-      {/* Study Activity Section */}
+      {/* Three Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2">
-          <ChartCard>
-            <DailyStudyTimeGraph />
-          </ChartCard>
-        </div>
-        <div className="lg:col-span-1">
         <ChartCard>
-          <SubjectDistributionPieChart />
+          <SubjectWiseGoalBarChart data={subjectWiseData} />
         </ChartCard>
-        </div>
-          
+        <ChartCard>
+          <GoalStatusPieChart data={goalStatusData} totalGoals={stats.totalGoals} />
+        </ChartCard>
+        <ChartCard>
+          <SessionsPerDayCountChart data={sessionsPerDayData} />
+        </ChartCard>
       </div>
 
       <div className="h-8"></div>

@@ -87,7 +87,7 @@ export function UpdateStatus({ goal }) {
                 {options.map((option) => (
                   <SelectItem 
                     key={option.status} 
-                    value={`${option.status} - ${option.percentage}%`}
+                    value={`${option.status}`}
                     className="text-white hover:bg-gray-800 focus:bg-gray-800"
                   >
                     {option.status} - {option.percentage}%
